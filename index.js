@@ -3,7 +3,7 @@ const random = require("@pulumi/random");
 
 // Create a random string
 const randomString = new random.RandomString("my-random-string", {
-    length: 16,
+    length: 20,
     special: true,
     upper: true,
     lower: true,
