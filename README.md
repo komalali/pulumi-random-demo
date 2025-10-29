@@ -18,7 +18,7 @@ A simple Pulumi program that uses the random provider to create a random string.
 
 2. Configure Pulumi:
    ```bash
-   pulumi login
+   pulumi login https://api-kokomo.review-stacks.pulumi-dev.io/
    pulumi stack init dev
    ```
 
@@ -35,17 +35,19 @@ This project includes two workflows:
 ### PR Preview (`pr-preview.yml`)
 - Triggers on pull requests against the `main` branch
 - Runs `pulumi preview` to show what changes would be made
+- Uses the custom Pulumi backend at `https://api-kokomo.review-stacks.pulumi-dev.io/`
 - Requires `PULUMI_ACCESS_TOKEN` secret to be set in the repository
 
 ### Deploy (`deploy.yml`)
 - Triggers when PRs are merged to `main`
 - Runs `pulumi up` to deploy changes
+- Uses the custom Pulumi backend at `https://api-kokomo.review-stacks.pulumi-dev.io/`
 - Requires `PULUMI_ACCESS_TOKEN` secret to be set in the repository
 
 ## Required Secrets
 
 Add the following secret to your GitHub repository:
-- `PULUMI_ACCESS_TOKEN` - Your Pulumi access token from https://app.pulumi.com/account/tokens
+- `PULUMI_ACCESS_TOKEN` - Your Pulumi access token from https://api-kokomo.review-stacks.pulumi-dev.io/
 
 ## What This Program Does
 
