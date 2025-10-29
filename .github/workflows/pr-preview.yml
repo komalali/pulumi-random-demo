@@ -26,5 +26,6 @@ jobs:
           command: preview
           stack-name: dev
           cloud-url: https://api-kokomo.review-stacks.pulumi-dev.io/
+          upsert: true
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
