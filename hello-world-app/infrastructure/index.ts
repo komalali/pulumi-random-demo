@@ -35,8 +35,8 @@ const ecsSecurityGroup = new aws.ec2.SecurityGroup("ecs-sg", {
     description: "Security group for ECS tasks",
     ingress: [{
         protocol: "tcp",
-        fromPort: 80,
-        toPort: 80,
+        fromPort: 3000,
+        toPort: 3000,
         securityGroups: [albSecurityGroup.id],
     }],
     egress: [{
@@ -52,9 +52,13 @@ const repo = new awsx.ecr.Repository("hello-world-repo", {
     forceDelete: true,
 });
 
-// For now, use a simple nginx image to test deployment
-// TODO: Build and push custom image separately
-const imageUri = "nginx:latest";
+// Build and publish the Docker image to ECR
+const image = new awsx.ecr.Image("hello-world-image", {
+    repositoryUrl: repo.url,
+    context: "../", // Build context is the parent directory containing Dockerfile
+    dockerfile: "../Dockerfile",
+    platform: "linux/amd64", // Specify platform for compatibility
+});
 
 // Create an ECS cluster
 const cluster = new aws.ecs.Cluster("hello-world-cluster", {
@@ -70,7 +74,7 @@ const alb = new aws.lb.LoadBalancer("hello-world-alb", {
 
 // Create a target group for the ALB
 const targetGroup = new aws.lb.TargetGroup("hello-world-tg", {
-    port: 80,
+    port: 3000,
     protocol: "HTTP",
     targetType: "ip",
     vpcId: vpc.vpcId,
@@ -79,7 +83,7 @@ const targetGroup = new aws.lb.TargetGroup("hello-world-tg", {
         healthyThreshold: 2,
         interval: 30,
         matcher: "200",
-        path: "/",
+        path: "/health",
         port: "traffic-port",
         protocol: "HTTP",
         timeout: 5,
@@ -102,13 +106,13 @@ const listener = new aws.lb.Listener("hello-world-listener", {
 const taskDefinition = new awsx.ecs.FargateTaskDefinition("hello-world-task", {
     container: {
         name: "hello-world-container",
-        image: imageUri,
+        image: image.imageUri,
         memory: 512,
         cpu: 256,
         essential: true,
         portMappings: [{
-            containerPort: 80,
-            hostPort: 80,
+            containerPort: 3000,
+            hostPort: 3000,
             protocol: "tcp",
         }],
         logConfiguration: {
@@ -141,7 +145,7 @@ const service = new awsx.ecs.FargateService("hello-world-service", {
     loadBalancers: [{
         targetGroupArn: targetGroup.arn,
         containerName: "hello-world-container",
-        containerPort: 80,
+        containerPort: 3000,
     }],
 }, {
     dependsOn: [listener],
